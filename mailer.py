@@ -24,17 +24,17 @@ def send_report(
     """
     gmail_address = os.environ["GMAIL_ADDRESS"]
     app_password = os.environ["GMAIL_APP_PASSWORD"]
-    recipient = os.environ["EMAIL_TO"]
+    recipients = [r.strip() for r in os.environ["EMAIL_TO"].split(",")]
 
     msg = MIMEMultipart("alternative")
     msg["From"] = gmail_address
-    msg["To"] = recipient
+    msg["To"] = ", ".join(recipients)
     msg["Subject"] = subject
     msg.attach(MIMEText(text_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(gmail_address, app_password)
-        server.sendmail(gmail_address, recipient, msg.as_string())
+        server.sendmail(gmail_address, recipients, msg.as_string())
 
-    print(f"Email sent to {recipient}")
+    print(f"Email sent to {', '.join(recipients)}")
