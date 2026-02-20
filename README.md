@@ -121,3 +121,44 @@ The script can also send reports via WhatsApp using Meta's WhatsApp Business API
 | Mobile-friendly | Good | Excellent |
 | Setup complexity | Simple | Moderate |
 | Cost | Free | API usage fees apply |
+
+## Setup for Friends (Fork)
+
+The easiest way for someone else to run their own weekly report is to **fork** this repo.
+
+### 1. Fork the repo
+
+Click the **Fork** button at the top-right of this GitHub repo. This creates your own copy.
+
+### 2. Enable GitHub Actions
+
+Go to the **Actions** tab on your fork and click **"I understand my workflows, go ahead and enable them"**.
+
+### 3. Add your secrets
+
+Go to **Settings → Secrets and variables → Actions** and add these repository secrets:
+
+| Secret | Required |
+|---|---|
+| `PRONOTE_URL` | Yes |
+| `PRONOTE_USERNAME` | Yes |
+| `PRONOTE_PASSWORD` | Yes |
+| `GMAIL_ADDRESS` | Yes |
+| `GMAIL_APP_PASSWORD` | Yes |
+| `EMAIL_TO` | Yes |
+| `INCLUDE_HOMEWORKS` | No (default: false) |
+| `INCLUDE_TIMETABLE` | No (default: false) |
+| `WHATSAPP_ENABLED` | No (default: false) |
+| `META_ACCESS_TOKEN` | Only if WhatsApp enabled |
+| `META_PHONE_NUMBER_ID` | Only if WhatsApp enabled |
+| `WHATSAPP_PHONE_NUMBER` | Only if WhatsApp enabled |
+
+See the [environment table above](#2-configure-environment) for details on each variable.
+
+### 4. Done
+
+The workflow will run automatically every Friday. You can also trigger it manually from **Actions → Weekly Pronote Report → Run workflow**.
+
+### Staying up to date
+
+When the original repo gets updates, GitHub will show a banner on your fork saying **"This branch is X commits behind"**. Click **Sync fork → Update branch** to pull in the latest changes. Your secrets are never affected by syncing.
