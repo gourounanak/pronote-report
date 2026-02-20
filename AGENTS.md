@@ -3,8 +3,9 @@
 ## Project Overview
 This is a **Pronote Weekly Report** automation tool that:
 - Fetches grades from Pronote for all children of a parent account
-- Generates formatted email reports (text + HTML)
-- Sends weekly reports every Friday via Gmail SMTP
+- Generates formatted reports (text + HTML)
+- Sends weekly reports every Friday via Gmail SMTP and/or WhatsApp
+- Supports WhatsApp messaging via Meta Business API (completely headless)
 - Runs automatically via GitHub Actions
 
 ## Repository Structure
@@ -13,6 +14,7 @@ This is a **Pronote Weekly Report** automation tool that:
 ├── main.py                 # Entry point - orchestrates the entire flow
 ├── fetcher.py             # Pronote API integration - fetches grades data
 ├── mailer.py              # Email sending via Gmail SMTP
+├── whatsapp_sender.py     # WhatsApp messaging via Meta Business API
 ├── report.py              # Report formatting (text and HTML)
 ├── requirements.txt       # Python dependencies
 ├── .env.example          # Environment variables template
@@ -24,9 +26,10 @@ This is a **Pronote Weekly Report** automation tool that:
 ## Key Components
 
 ### Core Files
-- **`main.py`**: Main orchestrator that loads environment, fetches grades, builds reports, and sends emails
+- **`main.py`**: Main orchestrator that loads environment, fetches grades, builds reports, and sends via email/WhatsApp
 - **`fetcher.py`**: Contains `GradeEntry` dataclass and `fetch_grades()` function using pronotepy library
 - **`mailer.py`**: Handles Gmail SMTP email sending with `send_report()` function
+- **`whatsapp_sender.py`**: Handles WhatsApp messaging via Meta Business API with text cleaning for mobile
 - **`report.py`**: Formats data into text and HTML reports with French date formatting
 
 ### Configuration
@@ -34,8 +37,10 @@ This is a **Pronote Weekly Report** automation tool that:
 - **Environment Variables Required**:
   - `PRONOTE_URL`: School's Pronote parent page URL
   - `PRONOTE_USERNAME` & `PRONOTE_PASSWORD`: Pronote credentials
-  - `GMAIL_ADDRESS` & `GMAIL_APP_PASSWORD`: Gmail SMTP credentials
-  - `EMAIL_TO`: Recipient email address(es)
+  - `GMAIL_ADDRESS` & `GMAIL_APP_PASSWORD`: Gmail SMTP credentials (optional)
+  - `EMAIL_TO`: Recipient email address(es) (optional)
+  - `META_ACCESS_TOKEN` & `META_PHONE_NUMBER_ID`: Meta WhatsApp Business API credentials (optional)
+  - `WHATSAPP_PHONE_NUMBER`: Recipient WhatsApp number with country code (optional)
 
 ### Automation
 - **`.github/workflows/weekly_report.yml`**: Runs every Friday at 7 AM Paris time
@@ -64,6 +69,9 @@ This is a **Pronote Weekly Report** automation tool that:
 - `fetch_grades()`: Returns `dict[str, list[GradeEntry]]` mapping child names to their grades
 - `build_text_report()` & `build_html_report()`: Format grades into email bodies
 - `send_report()`: Sends multipart email with both text and HTML versions
+- `send_whatsapp_report()`: Sends WhatsApp message via Meta Business API with cleaned formatting
+- `send_whatsapp_group()`: Sends WhatsApp messages to multiple recipients
+- `_clean_whatsapp_text()`: Removes long separator lines for better mobile readability
 
 ## Potential Enhancement Areas
 - Add more email providers beyond Gmail

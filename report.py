@@ -14,12 +14,27 @@ def _fmt_date(d: datetime.date) -> str:
     return f"{_WEEKDAYS_FR[d.weekday()]} {d.day:02d}/{d.month:02d}"
 
 
+def _fmt_date_whatsapp(d: datetime.date) -> str:
+    """Format date for WhatsApp without day abbreviation."""
+    return f"{d.day:02d}/{d.month:02d}"
+
+
 def _grade_line(g: GradeEntry) -> str:
     bonus_tag = " [BONUS]" if g.is_bonus else ""
     comment = f" — {g.comment}" if g.comment else ""
     coeff = f" (coeff {g.coefficient})" if g.coefficient and g.coefficient != "1" else ""
     return (
         f"  {_fmt_date(g.date)}  {g.subject:<25} {g.grade}/{g.out_of}{coeff}{bonus_tag}{comment}"
+    )
+
+
+def _grade_line_whatsapp(g: GradeEntry) -> str:
+    """Format grade line for WhatsApp with subject at start, no day abbreviation, and colon separator."""
+    bonus_tag = " [BONUS]" if g.is_bonus else ""
+    comment = f" — {g.comment}" if g.comment else ""
+    coeff = f" (coeff {g.coefficient})" if g.coefficient and g.coefficient != "1" else ""
+    return (
+        f"{g.subject:<25} {_fmt_date_whatsapp(g.date)}: {g.grade}/{g.out_of}{coeff}{bonus_tag}{comment}"
     )
 
 
@@ -54,6 +69,37 @@ def build_text_report(
                 lines.append(_grade_line(g))
 
     lines.append(f"\n{'=' * 60}")
+    lines.append(f"Généré le {today.strftime('%d/%m/%Y')}")
+    return "\n".join(lines)
+
+
+def build_whatsapp_report(
+    grades_by_child: dict[str, list[GradeEntry]],
+    days: int = 14,
+) -> str:
+    """Build a WhatsApp-friendly report with emoji and bold child names, no subject grouping."""
+    today = datetime.date.today()
+    lines = [
+        "📊 Rapport de notes Pronote",
+        f"Semaine du {_fmt_date_whatsapp(today - datetime.timedelta(days=days))} au {_fmt_date_whatsapp(today)}",
+        "=" * 50,
+    ]
+
+    for child_name, grades in grades_by_child.items():
+        lines.append(f"\n👧🏻 **{child_name}**")
+        lines.append("─" * 30)
+
+        if not grades:
+            lines.append("  Aucune note sur la période.")
+            continue
+
+        # Sort grades by date (most recent first) without grouping by subject
+        sorted_grades = sorted(grades, key=lambda g: g.date, reverse=True)
+        
+        for g in sorted_grades:
+            lines.append(_grade_line_whatsapp(g))
+
+    lines.append(f"\n{'=' * 50}")
     lines.append(f"Généré le {today.strftime('%d/%m/%Y')}")
     return "\n".join(lines)
 
