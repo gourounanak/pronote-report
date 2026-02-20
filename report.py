@@ -23,8 +23,9 @@ def _grade_line(g: GradeEntry) -> str:
     bonus_tag = " [BONUS]" if g.is_bonus else ""
     comment = f" — {g.comment}" if g.comment else ""
     coeff = f" (coeff {g.coefficient})" if g.coefficient and g.coefficient != "1" else ""
+    avg = f"  moy. classe {g.average}" if g.average else ""
     return (
-        f"  {_fmt_date(g.date)}  {g.subject:<25} {g.grade}/{g.out_of}{coeff}{bonus_tag}{comment}"
+        f"  {_fmt_date(g.date)}  {g.subject:<25} {g.grade}/{g.out_of}{coeff}{avg}{bonus_tag}{comment}"
     )
 
 
@@ -33,8 +34,9 @@ def _grade_line_whatsapp(g: GradeEntry) -> str:
     bonus_tag = " [BONUS]" if g.is_bonus else ""
     comment = f" — {g.comment}" if g.comment else ""
     coeff = f" (coeff {g.coefficient})" if g.coefficient and g.coefficient != "1" else ""
+    avg = f"  moy. {g.average}" if g.average else ""
     return (
-        f"{g.subject:<25} {_fmt_date_whatsapp(g.date)}: {g.grade}/{g.out_of}{coeff}{bonus_tag}{comment}"
+        f"{g.subject:<25} {_fmt_date_whatsapp(g.date)}: {g.grade}/{g.out_of}{coeff}{avg}{bonus_tag}{comment}"
     )
 
 
@@ -254,11 +256,13 @@ def build_html_report(
                     bonus = " <span style='color:#e67e22;font-size:11px'>[BONUS]</span>" if g.is_bonus else ""
                     coeff = f"<br><small style='color:#888'>coeff {escape(g.coefficient)}</small>" if g.coefficient and g.coefficient != "1" else ""
                     comment = f"<br><small style='color:#888;font-style:italic'>{escape(g.comment)}</small>" if g.comment else ""
+                    avg_display = escape(g.average) if g.average else "—"
                     rows += f"""
                 <tr style='border-bottom:1px solid #f0f0f0'>
                     <td style='padding:8px 12px;color:#555'>{'<b>' + esc_subject + '</b>' if first else ''}</td>
                     <td style='padding:8px 12px'>{_fmt_date(g.date)}</td>
                     <td style='padding:8px 12px;text-align:center;font-weight:bold'>{esc_grade}/{esc_out_of}{bonus}{coeff}</td>
+                    <td style='padding:8px 12px;text-align:center;color:#888'>{avg_display}</td>
                     <td style='padding:8px 12px;color:#666'>{comment}</td>
                 </tr>"""
                     first = False
@@ -270,6 +274,7 @@ def build_html_report(
                         <th style='padding:10px 12px;font-weight:600;text-align:left'>Matière</th>
                         <th style='padding:10px 12px;font-weight:600;text-align:left'>Date</th>
                         <th style='padding:10px 12px;font-weight:600;text-align:center'>Note</th>
+                        <th style='padding:10px 12px;font-weight:600;text-align:center'>Moy. classe</th>
                         <th style='padding:10px 12px;font-weight:600;text-align:left'>Commentaire</th>
                     </tr>
                 </thead>
