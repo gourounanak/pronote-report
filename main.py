@@ -12,6 +12,10 @@ Required env vars (set in .env locally, or GitHub Actions secrets in CI):
     GMAIL_APP_PASSWORD — 16-char app password from Google
     EMAIL_TO           — recipient email address
 
+Optional report sections:
+    INCLUDE_HOMEWORKS      — set to "true" to include homeworks in report (default: false)
+    INCLUDE_TIMETABLE      — set to "true" to include timetable in report (default: false)
+
 Optional WhatsApp vars (requires Meta WhatsApp Business API):
     WHATSAPP_ENABLED       — set to "true" to enable WhatsApp sending (default: false)
     META_ACCESS_TOKEN      — Your Meta WhatsApp Business API access token
@@ -51,16 +55,25 @@ def main() -> None:
     total = sum(len(g) for g in grades_by_child.values())
     print(f"Fetched {total} grade(s) across {len(grades_by_child)} child(ren).")
 
-    try:
-        homeworks_by_child = fetch_homeworks(pronote_url, username, password, days=7)
-    except Exception as exc:
-        print(f"WARNING: could not fetch homeworks — {exc}", file=sys.stderr)
+    include_homeworks = os.environ.get("INCLUDE_HOMEWORKS", "false").lower() == "true"
+    include_timetable = os.environ.get("INCLUDE_TIMETABLE", "false").lower() == "true"
+
+    if include_homeworks:
+        try:
+            homeworks_by_child = fetch_homeworks(pronote_url, username, password, days=7)
+        except Exception as exc:
+            print(f"WARNING: could not fetch homeworks — {exc}", file=sys.stderr)
+            homeworks_by_child = {}
+    else:
         homeworks_by_child = {}
 
-    try:
-        timetable_by_child = fetch_timetable(pronote_url, username, password, days=7)
-    except Exception as exc:
-        print(f"WARNING: could not fetch timetable — {exc}", file=sys.stderr)
+    if include_timetable:
+        try:
+            timetable_by_child = fetch_timetable(pronote_url, username, password, days=7)
+        except Exception as exc:
+            print(f"WARNING: could not fetch timetable — {exc}", file=sys.stderr)
+            timetable_by_child = {}
+    else:
         timetable_by_child = {}
 
     text_body = build_text_report(grades_by_child, homeworks_by_child, timetable_by_child, days=DAYS)
