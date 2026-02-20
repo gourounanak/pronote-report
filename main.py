@@ -26,7 +26,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from fetcher import fetch_grades
+from fetcher import fetch_grades, fetch_homeworks, fetch_timetable
 from mailer import send_report
 from report import build_html_report, build_text_report
 from whatsapp_sender import send_whatsapp_instant, send_whatsapp_group
@@ -51,11 +51,23 @@ def main() -> None:
     total = sum(len(g) for g in grades_by_child.values())
     print(f"Fetched {total} grade(s) across {len(grades_by_child)} child(ren).")
 
-    text_body = build_text_report(grades_by_child, days=DAYS)
-    html_body = build_html_report(grades_by_child, days=DAYS)
+    try:
+        homeworks_by_child = fetch_homeworks(pronote_url, username, password, days=7)
+    except Exception as exc:
+        print(f"WARNING: could not fetch homeworks — {exc}", file=sys.stderr)
+        homeworks_by_child = {}
+
+    try:
+        timetable_by_child = fetch_timetable(pronote_url, username, password, days=7)
+    except Exception as exc:
+        print(f"WARNING: could not fetch timetable — {exc}", file=sys.stderr)
+        timetable_by_child = {}
+
+    text_body = build_text_report(grades_by_child, homeworks_by_child, timetable_by_child, days=DAYS)
+    html_body = build_html_report(grades_by_child, homeworks_by_child, timetable_by_child, days=DAYS)
 
     today = datetime.date.today()
-    subject = f"Notes Pronote — semaine du {(today - datetime.timedelta(days=DAYS)).strftime('%d/%m')} au {today.strftime('%d/%m/%Y')}"
+    subject = f"Rapport Pronote — semaine du {(today - datetime.timedelta(days=DAYS)).strftime('%d/%m')} au {today.strftime('%d/%m/%Y')}"
 
     print("Sending email…")
     try:
