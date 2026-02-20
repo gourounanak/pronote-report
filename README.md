@@ -40,7 +40,7 @@ python main.py
 1. Push this repo to GitHub (can be private).
 2. Go to **Settings → Secrets and variables → Actions**.
 3. Add each variable from `.env.example` as a **Repository secret**.
-4. The workflow runs every **Friday at 7:00 AM** (Paris time).
+4. The workflow runs every **Friday at 7:00 AM** (Paris time). You may need to enable it first (**Actions** tab → **Weekly Pronote Report** → **Enable** )
    You can also trigger it manually from the **Actions** tab → **Weekly Pronote Report** → **Run workflow**.
 
 ## Finding your Pronote URL
