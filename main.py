@@ -41,6 +41,15 @@ DAYS = 14
 def main() -> None:
     load_dotenv()
 
+    # Some schedulers (e.g. PythonAnywhere's free tier) only support running a
+    # task once per day, not once per week. Bail out unless it's the report day.
+    # 23:00 UTC Thursday == Friday 09:00 AEST, so we check for Thursday in UTC.
+    # Set FORCE_RUN=true to bypass this (manual/local runs, GitHub Actions cron).
+    if os.environ.get("FORCE_RUN", "").lower() != "true":
+        if datetime.datetime.utcnow().weekday() != 3:  # 0=Mon … 3=Thu, 6=Sun
+            print("Not report day — skipping. Set FORCE_RUN=true to override.")
+            return
+
     pronote_url = os.environ["PRONOTE_URL"]
     username = os.environ["PRONOTE_USERNAME"]
     password = os.environ["PRONOTE_PASSWORD"]

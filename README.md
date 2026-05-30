@@ -44,8 +44,42 @@ python main.py
 1. Push this repo to GitHub (can be private).
 2. Go to **Settings → Secrets and variables → Actions**.
 3. Add each variable from `.env.example` as a **Repository secret**.
-4. The workflow runs every **Friday at 7:00 AM** (Paris time). You may need to enable it first (**Actions** tab → **Weekly Pronote Report** → **Enable** )
-   You can also trigger it manually from the **Actions** tab → **Weekly Pronote Report** → **Run workflow**.
+4. The scheduled (`cron`) trigger is **disabled** — the weekly report now runs on
+   PythonAnywhere (see below). The GitHub workflow is kept only for **manual** runs:
+   **Actions** tab → **Weekly Pronote Report** → **Run workflow**.
+
+> **Why scheduling moved off GitHub:** GitHub automatically disables `schedule:`
+> workflows after 60 days of repo inactivity, which is unreliable for a low-traffic
+> repo like this. To re-enable the GitHub cron instead, uncomment the `schedule:`
+> block in `.github/workflows/weekly_report.yml`.
+
+### 5. Deploy to PythonAnywhere (alternative, always-on)
+
+PythonAnywhere runs the job on a free always-on Linux account, so it fires even when
+your machine is off and isn't affected by GitHub disabling scheduled workflows.
+
+1. Sign up at [pythonanywhere.com](https://www.pythonanywhere.com) (free "Beginner" tier).
+2. Open a **Bash console** and clone the repo:
+   ```bash
+   git clone https://github.com/YOUR_USER/pronote_report.git ~/pronote_report
+   ```
+3. Create a virtualenv and install dependencies:
+   ```bash
+   python3.12 -m venv ~/.virtualenvs/pronote
+   source ~/.virtualenvs/pronote/bin/activate
+   pip install -r ~/pronote_report/requirements.txt
+   ```
+4. Create `~/pronote_report/.env` with your values (same keys as `.env.example`).
+   This replaces GitHub secrets — they never leave PythonAnywhere.
+5. Go to the **Tasks** tab and add a **daily** task at **23:00 UTC** (= Friday 09:00 AEST):
+   ```bash
+   cd ~/pronote_report && git pull --quiet && source ~/.virtualenvs/pronote/bin/activate && pip install -q -r requirements.txt && python main.py
+   ```
+
+The free tier only runs tasks **daily**, so `main.py` skips any day that isn't the
+report day (Thursday in UTC). The `git pull` in the task command picks up new code each
+run — after you push to GitHub, the next run uses the latest version (no auto-deploy).
+To run on demand regardless of the day, use `FORCE_RUN=true python main.py`.
 
 ## Finding your Pronote URL
 
